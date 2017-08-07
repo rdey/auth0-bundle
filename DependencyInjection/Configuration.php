@@ -26,7 +26,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('cache')->defaultNull()->end()
                 ->scalarNode('httplug_client_service')->defaultNull()->end()
                 ->booleanNode('security')->defaultTrue()->info(
-                    "Whether or not the SecurityBundle integration should be enabled. Disable if your application does not use SecurityBundle."
+                    "Whether or not the SecurityBundle integration should be enabled. Set to false if and only if your app does not use SecurityBundle."
                 )->end()
             ->end();
 
