@@ -12,7 +12,9 @@ class HappyrAuth0Bundle extends Bundle
     {
         parent::build($container);
 
-        $extension = $container->getExtension('security');
-        $extension->addSecurityListenerFactory(new SSOFactory());
+        if ($container->hasExtension('security')) {
+            $extension = $container->getExtension('security');
+            $extension->addSecurityListenerFactory(new SSOFactory());
+        }
     }
 }
