@@ -26,6 +26,10 @@ class HappyrAuth0Extension extends Extension
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
 
+        if ($container->hasExtension('security')) {
+            $loader->load('security.yml');
+        }
+
         // Add the secret key as parameter
         $container->setParameter('auth0.domain', $config['domain']);
         $container->setParameter('auth0.client_id', $config['client_id']);

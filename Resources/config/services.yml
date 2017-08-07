@@ -25,27 +25,6 @@ services:
         class: Auth0\SDK\API\Management
         factory: ["@happyr.auth0.api.management.factory", "create"]
 
-    happyr.auth0.security.authentication.provider.sso:
-        class: Happyr\Auth0Bundle\Security\Authentication\Provider\SSOProvider
-        arguments: [~, '@happyr.auth0.api.authentication']
-        public: false
-
-    happyr.auth0.security.authentication.listener.sso:
-        class: Happyr\Auth0Bundle\Security\Firewall\SSOListener
-        parent: security.authentication.listener.abstract
-        abstract: true
-        calls:
-          - [ 'setAuthenticationApi', ["@happyr.auth0.api.authentication"]]
-
-    happyr.auth0.security.authentication.entry_point.oauth:
-        class: Happyr\Auth0Bundle\Security\EntryPoint\SSOEntryPoint
-        arguments:
-            - ~ #csrfTokenManager
-            - "@security.http_utils"
-            - "%auth0.client_id%"
-            - "%auth0.domain%"
-        abstract: true
-
     happyr.auth0.twig.extension.state_parameter:
         class: Happyr\Auth0Bundle\Twig\StateParameterExtension
         arguments:
