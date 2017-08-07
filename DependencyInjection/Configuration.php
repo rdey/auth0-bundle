@@ -26,6 +26,9 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('cache')->defaultNull()->end()
                 ->scalarNode('httplug_client_service')->defaultNull()->end()
                 ->booleanNode('csrf_protection')->defaultTrue()->end()
+                ->booleanNode('security')->defaultTrue()->info(
+                    "Whether or not the SecurityBundle integration should be enabled. Disable if your application does not use SecurityBundle."
+                )->end()
             ->end();
 
         return $treeBuilder;

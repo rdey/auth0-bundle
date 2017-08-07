@@ -15,7 +15,7 @@ services:
     happyr.auth0.security.authentication.entry_point.oauth:
         class: Happyr\Auth0Bundle\Security\EntryPoint\SSOEntryPoint
         arguments:
-            - "@security.csrf.token_manager"
+            - ~ # CsrfTokenManager
             - "@security.http_utils"
             - "%auth0.client_id%"
             - "%auth0.domain%"
