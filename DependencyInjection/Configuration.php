@@ -25,6 +25,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('client_secret')->isRequired()->cannotBeEmpty()->end()
                 ->scalarNode('cache')->defaultNull()->end()
                 ->scalarNode('httplug_client_service')->defaultNull()->end()
+                ->booleanNode('csrf_protection')->defaultTrue()->end()
             ->end();
 
         return $treeBuilder;

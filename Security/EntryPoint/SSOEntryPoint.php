@@ -44,7 +44,7 @@ class SSOEntryPoint implements AuthenticationEntryPointInterface
      * @param $auth0ClientId
      * @param string $auth0Domain
      */
-    public function __construct(CsrfTokenManager $csrfTokenManager, HttpUtils $httpUtils, $auth0ClientId, $auth0Domain, $callbackPath)
+    public function __construct(CsrfTokenManager $csrfTokenManager = null, HttpUtils $httpUtils, $auth0ClientId, $auth0Domain, $callbackPath)
     {
         $this->csrfTokenManager = $csrfTokenManager;
         $this->httpUtils = $httpUtils;
@@ -58,15 +58,18 @@ class SSOEntryPoint implements AuthenticationEntryPointInterface
      */
     public function start(Request $request, AuthenticationException $authException = null)
     {
-        $csrfToken = $this->csrfTokenManager->getToken('auth0-sso');
-
         $query = [
             'client_id' => $this->auth0ClientId,
             'redirect_uri' => $this->httpUtils->generateUri($request, $this->callbackPath),
             'response_type' => 'code',
             'language' => $request->getLocale(),
-            'state' => $csrfToken->getValue(),
         ];
+
+        if ($this->csrfTokenManager) {
+            $csrfToken = $this->csrfTokenManager->getToken('auth0-sso');
+
+            $query['state'] = $csrfToken->getValue();
+        }
 
         return new RedirectResponse(sprintf('https://%s/authorize?%s', $this->auth0Domain, http_build_query($query)));
     }
