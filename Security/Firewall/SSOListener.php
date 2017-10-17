@@ -64,14 +64,23 @@ class SSOListener extends AbstractAuthenticationListener
             throw new AuthenticationException('No oauth code in the request.');
         }
 
+        $stateParameter = null;
+        if ($state = $request->query->get('state')) {
+            $stateParameter = json_decode(base64_decode($state), true);
+        }
+
         if ($this->csrfTokenManager) {
-            if (null === $state = $request->query->get('state')) {
-                throw new AuthenticationException('No state in the request.');
+            if (null === $stateParameter || !isset($stateParameter['nonce'])) {
+                throw new AuthenticationException('No state nonce in the request.');
             }
 
-            if (!$this->csrfTokenManager->isTokenValid(new CsrfToken('auth0-sso', $state))) {
+            if (!$this->csrfTokenManager->isTokenValid(new CsrfToken('auth0-sso', $stateParameter['nonce']))) {
                 throw new AuthenticationException('Invalid CSRF token');
             }
+        }
+
+        if (isset($stateParameter['returnUrl'])) {
+            $request->getSession()->set('_security.'.$this->providerKey.'.target_path', $stateParameter['returnUrl']);
         }
 
         try {

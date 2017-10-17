@@ -47,6 +47,8 @@ class HappyrAuth0Extension extends Extension
                 ->addMethodCall('setCsrfTokenManager', [new Reference('security.csrf.token_manager')]);
             $container->getDefinition('happyr.auth0.security.authentication.entry_point.oauth')
                 ->replaceArgument(0, new Reference('security.csrf.token_manager'));
+            $container->getDefinition('happyr.auth0.twig.extension.state_parameter')
+                ->replaceArgument(0, new Reference('security.csrf.token_manager'));
         }
     }
 }

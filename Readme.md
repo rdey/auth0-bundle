@@ -9,14 +9,14 @@
 
 ### Warning
 
-This bundle is in very early development. However, it is being used in production for at least 3 applications. 
+This bundle is in very early development. However, it is being used in production for at least 3 applications.
 
 ### Installation
 
-Install with Composer: 
+Install with Composer:
 
 ```bash
-composer require happyr/auth0-bundle auth0/auth0-php:@alpha php-http/message php-http/guzzle6-adapter 
+composer require happyr/auth0-bundle auth0/auth0-php:@alpha php-http/message php-http/guzzle6-adapter
 ```
 
 Enable the bundle in AppKernel.php
@@ -28,11 +28,12 @@ public function registerBundles()
         // ...
         new \Happyr\Auth0Bundle\HappyrAuth0Bundle(),
     ];
-    
+
     return $bundles;
-}       
+}
 ```
-Add your credentials: 
+
+Add your credentials:
 
 ```yaml
 // app/config/config.yml
@@ -43,8 +44,7 @@ happyr_auth0:
   cache: 'cache.provider.apc'
 ```
 
-
-Configure your application for Singe Sign On (SSO). 
+Configure your application for Single Sign On (SSO).
 
 ```yaml
 // app/config/security.yml
@@ -63,4 +63,19 @@ security:
         path:   default_logout
         target: _user_logout
         invalidate_session: true
+```
+
+Use the Twig extension for the state parameter together with Auth0 Lock.
+
+```javascript
+  var lock = new Auth0Lock('{{ auth0_client_id }}', '{{ auth0_domain }}', {
+    auth: {
+      redirectUrl: '{{ auth0_callback_url }}',
+      responseType: 'code',
+      params: {
+        scope: 'openid',
+        state: '{{ state_parameter(app.request.uri) }}'
+      }
+    }
+  });
 ```

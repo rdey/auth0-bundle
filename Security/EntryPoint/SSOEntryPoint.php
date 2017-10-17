@@ -68,7 +68,11 @@ class SSOEntryPoint implements AuthenticationEntryPointInterface
         if ($this->csrfTokenManager) {
             $csrfToken = $this->csrfTokenManager->getToken('auth0-sso');
 
-            $query['state'] = $csrfToken->getValue();
+            $stateParameter = [
+                'nonce' => $csrfToken->getValue(),
+            ];
+
+            $query['state'] = base64_encode(json_encode($stateParameter));
         }
 
         return new RedirectResponse(sprintf('https://%s/authorize?%s', $this->auth0Domain, http_build_query($query)));

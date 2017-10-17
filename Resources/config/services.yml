@@ -45,3 +45,10 @@ services:
             - "%auth0.client_id%"
             - "%auth0.domain%"
         abstract: true
+
+    happyr.auth0.twig.extension.state_parameter:
+        class: Happyr\Auth0Bundle\Twig\StateParameterExtension
+        arguments:
+            - ~ #csrfTokenManager
+        tags:
+            - { name: twig.extension }
