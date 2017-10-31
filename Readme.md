@@ -65,7 +65,9 @@ security:
         invalidate_session: true
 ```
 
-Use the Twig extension for the state parameter together with Auth0 Lock.
+#### Auth0 Lock ([Documentation][1])
+
+A Twig extension is provided which can be used to include a return url in the state parameter, together with the csrf nonce.
 
 ```javascript
   var lock = new Auth0Lock('{{ auth0_client_id }}', '{{ auth0_domain }}', {
@@ -79,3 +81,64 @@ Use the Twig extension for the state parameter together with Auth0 Lock.
     }
   });
 ```
+
+There is also an option which may be specified in the firewall to use a local login page, instead of redirecting to the auth0 subdomain.
+
+```yaml
+security:
+    firewalls:
+        default:
+            auth0_sso:
+                check_path: default_login_check
+                login_path: user_login
+                use_local_login: true
+```
+
+The use-case for this is to use the Auth0 Lock embeddable login form instead of the Auth0 Hosted Login Page while still using SSO.
+
+Sample controller code handling the local login page route, the same route specified as the `login_path` in config.
+
+```php
+    /**
+     * @Route("/login", name="user_login")
+     */
+    public function loginAction(Request $request)
+    {
+        return $this->render('login.html.twig', [
+            'forceLogin' => true,
+            'sessionUrl' => $this->get('session')->get('_security.default.target_path'),
+        ]);
+    }
+```
+
+Sample template code (the variables `auth0_client_id` and `auth0_domain` are here injected as twig global variables).
+
+```twig
+<script src="//cdn.auth0.com/js/lock/10.22.0/lock.min.js"></script>
+
+{% set forceLogin = forceLogin|default(false) %}
+{% set sessionUrl = sessionUrl|default(false) %}
+<script type="text/javascript">
+    var lock = new Auth0Lock('{{ auth0_client_id }}', '{{ auth0_domain }}', {
+        {% if forceLogin %}
+            closable: false,
+        {% endif %}
+        auth: {
+            redirectUrl: '{{ url("default_login_check") }}',
+            responseType: 'code',
+            params: {
+                scope: 'openid',
+                state: '{{ state_parameter(sessionUrl ? sessionUrl : forceLogin ? url("root") : app.request.uri) }}'
+            }
+        }
+    });
+
+    {% if forceLogin %}
+        lock.show();
+    {% endif %}
+</script>
+```
+
+[1]: https://auth0.com/docs/libraries/lock/v10
+
+
