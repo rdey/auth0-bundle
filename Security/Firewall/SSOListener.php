@@ -8,10 +8,19 @@ use Auth0\SDK\Exception\CoreException;
 use Happyr\Auth0Bundle\Model\Authorization\Token\Token;
 use Happyr\Auth0Bundle\Security\Authentication\Token\SSOToken;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Http\Firewall\AbstractAuthenticationListener;
+use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
+use Symfony\Component\Security\Http\Authentication\AuthenticationFailureHandlerInterface;
+use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerInterface;
+use Symfony\Component\Security\Core\Authentication\AuthenticationManagerInterface;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Security\Http\HttpUtils;
+
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
@@ -32,6 +41,18 @@ class SSOListener extends AbstractAuthenticationListener
      * @var CsrfTokenManager
      */
     private $csrfTokenManager;
+
+    /** @var TokenStorageInterface */
+    private $tokenStore;
+
+    /**
+     * SSOListener constructor.
+     */
+    public function __construct(TokenStorageInterface $tokenStorage, AuthenticationManagerInterface $authenticationManager, SessionAuthenticationStrategyInterface $sessionStrategy, HttpUtils $httpUtils, $providerKey, AuthenticationSuccessHandlerInterface $successHandler, AuthenticationFailureHandlerInterface $failureHandler, array $options = array(), LoggerInterface $logger = null, EventDispatcherInterface $dispatcher = null)
+    {
+        $this->tokenStore = $tokenStorage;
+        parent::__construct($tokenStorage, $authenticationManager, $sessionStrategy, $httpUtils, $providerKey, $successHandler, $failureHandler, $options, $logger, $dispatcher);
+    }
 
     public function setCsrfTokenManager(CsrfTokenManager $csrfTokenManager)
     {
@@ -58,7 +79,41 @@ class SSOListener extends AbstractAuthenticationListener
         return $this;
     }
 
+    /**
+     * Whether this request requires authentication.
+     *
+     * The default implementation only processes requests to a specific path,
+     * but a subclass could change this to only authenticate requests where a
+     * certain parameters is present.
+     *
+     * @param Request $request
+     *
+     * @return bool
+     */
+    protected function requiresAuthentication(Request $request)
+    {
+        if ($this->currentSSOTokenIsExpired()) {
+            return true;
+        }
+
+        return parent::requiresAuthentication($request);
+    }
+
     protected function attemptAuthentication(Request $request)
+    {
+        // We're doing a regular code-based authentication.
+        if (parent::requiresAuthentication($request)) {
+            return $this->attemptAuthenticationUsingCode($request);
+        }
+
+        if ($this->currentSSOTokenIsExpired()) {
+            $this->tokenStore->setToken(null);
+        }
+
+        return null;
+    }
+
+    protected function attemptAuthenticationUsingCode(Request $request)
     {
         if (null === $code = $request->query->get('code')) {
             throw new AuthenticationException('No oauth code in the request.');
@@ -106,5 +161,18 @@ class SSOListener extends AbstractAuthenticationListener
         $token->setAuth0Data($auth0Token);
 
         return $this->authenticationManager->authenticate($token);
+    }
+
+    protected function currentSSOTokenIsExpired()
+    {
+        $token = $this->tokenStore->getToken();
+
+        if ($token instanceof SSOToken) {
+            if ($token->isExpired()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

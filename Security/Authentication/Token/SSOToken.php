@@ -59,7 +59,7 @@ class SSOToken extends AbstractToken
     }
 
     /**
-     * @return mixed
+     * @return \DateTimeInterface|null
      */
     public function getExpiresAt()
     {
@@ -68,6 +68,18 @@ class SSOToken extends AbstractToken
         }
 
         return $this->auth0Data->getExpiresAt();
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isExpired()
+    {
+        if (!($expiration = $this->getExpiresAt())) {
+            return true;
+        }
+
+        return $expiration <= (new \DateTime());
     }
 
     /**
