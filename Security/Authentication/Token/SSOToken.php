@@ -2,72 +2,99 @@
 
 namespace Happyr\Auth0Bundle\Security\Authentication\Token;
 
-use Happyr\Auth0Bundle\Model\Authentication\UserProfile\UserInfo;
-use Happyr\Auth0Bundle\Model\Authorization\Token\Token;
+use Happyr\Auth0Bundle\Model\Authentication\Claims;
 use Symfony\Component\Security\Core\Authentication\Token\AbstractToken;
 use Symfony\Component\Security\Core\Role\Role;
 
 class SSOToken extends AbstractToken
 {
-    /**
-     * @var Token|null
-     */
-    private $auth0Data;
+    /** @var  string|null */
+    private $accessToken;
 
-    /**
-     * @var array
-     */
+    /** @var \DateTime|null */
+    private $expiresAt;
+
+    /** @var  string|null */
+    private $refreshToken;
+
+    /** @var string[] */
     private $storedRoles = [];
 
-    /**
-     * The user model for the API.
-     *
-     * @var mixed
-     */
-    private $userModel;
+    /** @var Claims|null */
+    private $claims;
+
+    public function getUsername()
+    {
+        if ($this->getUser()) {
+            return parent::getUsername();
+        }
+
+        if ($this->claims && $this->claims->hasClaim('sub')) {
+            return $this->claims->getClaim('sub');
+        }
+
+        return $this->accessToken;
+    }
+
+    public function getAccessToken(): ?string
+    {
+        return $this->accessToken;
+    }
 
     /**
-     * @param Token $data
+     * @param mixed $accessToken
      *
      * @return SSOToken
      */
-    public function setAuth0Data(Token $data)
+    public function setAccessToken($accessToken): SSOToken
     {
-        $this->auth0Data = $data;
+        $this->accessToken = $accessToken;
 
         return $this;
     }
 
     /**
-     * @return Token|null
-     */
-    public function getAuth0Data()
-    {
-        return $this->auth0Data;
-    }
-
-    /**
      * @return mixed
      */
-    public function getAccessToken()
+    public function getExpiresAt(): ?\DateTimeInterface
     {
-        if (null === $this->auth0Data) {
-            return null;
-        }
-
-        return $this->auth0Data->getAccessToken();
+        return $this->expiresAt;
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @param mixed $expiresAt
+     *
+     * @return SSOToken
      */
-    public function getExpiresAt()
+    public function setExpiresAt(\DateTimeInterface $expiresAt): SSOToken
     {
-        if (null === $this->auth0Data) {
-            return null;
-        }
+        $this->expiresAt = $expiresAt;
 
-        return $this->auth0Data->getExpiresAt();
+        return $this;
+    }
+
+    public function getRefreshToken(): ?string
+    {
+        return $this->refreshToken;
+    }
+
+    public function setRefreshToken(?string $refreshToken): SSOToken
+    {
+        $this->refreshToken = $refreshToken;
+
+        return $this;
+    }
+
+    public function getIdToken(): ?Claims
+    {
+        return $this->claims;
+    }
+
+    public function setIdToken(?Claims $claims): SSOToken
+    {
+        $this->claims = $claims;
+
+        return $this;
     }
 
     /**
@@ -80,26 +107,6 @@ class SSOToken extends AbstractToken
         }
 
         return $expiration <= (new \DateTime());
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getUserModel()
-    {
-        return $this->userModel;
-    }
-
-    /**
-     * @param UserInfo $userModel
-     *
-     * @return SSOToken
-     */
-    public function setUserModel(UserInfo $userModel)
-    {
-        $this->userModel = $userModel;
-
-        return $this;
     }
 
     public function getCredentials()
@@ -117,11 +124,13 @@ class SSOToken extends AbstractToken
         return serialize(
             [
                 is_object($user) ? clone $user : $user,
-                is_object($this->userModel) ? clone $this->userModel : $this->userModel,
+                is_object($this->claims) ? clone $this->claims : $this->claims,
                 $this->isAuthenticated(),
                 $this->getRoles(),
                 $this->getAttributes(),
-                $this->auth0Data,
+                $this->accessToken,
+                $this->expiresAt,
+                $this->refreshToken,
             ]
         );
     }
@@ -131,7 +140,7 @@ class SSOToken extends AbstractToken
      */
     public function unserialize($serialized)
     {
-        list($user, $this->userModel, $isAuthenticated, $this->storedRoles, $attributes, $this->auth0Data) = unserialize($serialized);
+        list($user, $this->claims, $isAuthenticated, $this->storedRoles, $attributes, $this->accessToken, $this->expiresAt, $this->refreshToken) = unserialize($serialized);
         if ($user) {
             $this->setUser($user);
         }

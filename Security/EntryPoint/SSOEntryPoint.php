@@ -50,17 +50,23 @@ class SSOEntryPoint implements AuthenticationEntryPointInterface
     private $loginPath;
 
     /**
+     * @var array
+     */
+    private $scope;
+
+    /**
      * @param HttpUtils $httpUtils
      * @param $auth0ClientId
      * @param string $auth0Domain
      */
-    public function __construct(CsrfTokenManager $csrfTokenManager = null, HttpUtils $httpUtils, $auth0ClientId, $auth0Domain, $callbackPath, $loginPath, $useLocalLogin = false)
+    public function __construct(CsrfTokenManager $csrfTokenManager = null, HttpUtils $httpUtils, $auth0ClientId, $auth0Domain, $callbackPath, array $scope, $loginPath, $useLocalLogin = false)
     {
         $this->csrfTokenManager = $csrfTokenManager;
         $this->httpUtils = $httpUtils;
         $this->auth0ClientId = $auth0ClientId;
         $this->auth0Domain = $auth0Domain;
         $this->callbackPath = $callbackPath;
+        $this->scope = $scope;
         $this->loginPath = $loginPath;
         $this->useLocalLogin = $useLocalLogin;
     }
@@ -79,6 +85,7 @@ class SSOEntryPoint implements AuthenticationEntryPointInterface
             'redirect_uri' => $this->httpUtils->generateUri($request, $this->callbackPath),
             'response_type' => 'code',
             'language' => $request->getLocale(),
+            'scope' => implode(' ', $this->scope),
         ];
 
         if ($this->csrfTokenManager) {

@@ -11,6 +11,7 @@ services:
         calls:
           - [ 'setAuthenticationApi', ["@happyr.auth0.api.authentication"]]
           - [ 'setCsrfTokenManager', ["@security.csrf.token_manager"]]
+          - [ 'setClientSecret', ['%auth0.client_secret%']]
 
     happyr.auth0.security.authentication.entry_point.oauth:
         class: Happyr\Auth0Bundle\Security\EntryPoint\SSOEntryPoint
@@ -19,4 +20,8 @@ services:
             - "@security.http_utils"
             - "%auth0.client_id%"
             - "%auth0.domain%"
+            - ~
+            - "%auth0.scope%"
+            - ~
+            - ~
         abstract: true

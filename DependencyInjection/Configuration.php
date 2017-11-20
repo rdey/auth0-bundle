@@ -29,6 +29,16 @@ class Configuration implements ConfigurationInterface
                 ->booleanNode('security')->defaultTrue()->info(
                     "Whether or not the SecurityBundle integration should be enabled. Set to false if and only if your app does not use SecurityBundle."
                 )->end()
+                ->arrayNode('scopes')
+                    ->scalarPrototype()->end()
+                    ->defaultValue(['openid'])
+                    ->validate()
+                        ->ifTrue(function($scopes) {
+                            return in_array('offline_access', $scopes) && !in_array('openid', $scopes);
+                        })
+                        ->thenInvalid("If you're requesting the 'offline_access' scope, the bundle requires that you also request the 'openid' scope.")
+                    ->end()
+                ->end()
             ->end();
 
         return $treeBuilder;

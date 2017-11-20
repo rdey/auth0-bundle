@@ -47,15 +47,7 @@ class SSOProvider implements AuthenticationProviderInterface
     public function authenticate(TokenInterface $token)
     {
         try {
-            // Fetch info from the user
-            $userInfo = $this->authenticationApi->userinfo($token->getAccessToken());
-            $userModel = UserInfo::create($userInfo);
-        } catch (\Exception $e) {
-            throw new AuthenticationException('Could not fetch user info from Auth0', 0, $e);
-        }
-
-        try {
-            $user = $this->userProvider->loadUserByUsername(null !== $userModel ? $userModel : $token->getUsername());
+            $user = $this->userProvider->loadUserByUsername(null !== $token->getIdToken() ? $token->getIdToken() : $token->getUsername());
         } catch (UsernameNotFoundException $e) {
             throw new UnsupportedUserException('Unsupported user.', 0, $e);
         }
@@ -64,10 +56,12 @@ class SSOProvider implements AuthenticationProviderInterface
             throw new AuthenticationException('The Auth0 SSO authentication failed.');
         }
 
-        $authenticatedToken = new SSOToken($this->mergeRoles($userModel->getRoles(), $user->getRoles()));
+        $authenticatedToken = new SSOToken($user->getRoles());
         $authenticatedToken->setUser($user);
-        $authenticatedToken->setAuth0Data($token->getAuth0Data())
-            ->setUserModel($userModel)
+        $authenticatedToken->setAccessToken($token->getAccessToken())
+            ->setExpiresAt($token->getExpiresAt())
+            ->setIdToken($token->getIdToken())
+            ->setRefreshToken($token->getRefreshToken())
             ->setAuthenticated(true);
 
         return $authenticatedToken;
@@ -76,18 +70,5 @@ class SSOProvider implements AuthenticationProviderInterface
     public function supports(TokenInterface $token)
     {
         return $token instanceof SSOToken;
-    }
-
-    /**
-     * @param $userModel
-     * @param $user
-     *
-     * @return array
-     */
-    private function mergeRoles(array $a, array $b)
-    {
-        $roles = array_merge($a, $b);
-
-        return array_unique($roles);
     }
 }

@@ -4,7 +4,9 @@ namespace Happyr\Auth0Bundle\Security\Firewall;
 
 use Auth0\SDK\API\Authentication;
 use Auth0\SDK\Exception;
+use Auth0\SDK\Exception\ApiException;
 use Auth0\SDK\Exception\CoreException;
+use Happyr\Auth0Bundle\Model\Authentication\Claims;
 use Happyr\Auth0Bundle\Model\Authorization\Token\Token;
 use Happyr\Auth0Bundle\Security\Authentication\Token\SSOToken;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,6 +44,9 @@ class SSOListener extends AbstractAuthenticationListener
      */
     private $csrfTokenManager;
 
+    /** @var string */
+    private $clientSecret;
+
     /** @var TokenStorageInterface */
     private $tokenStore;
 
@@ -57,6 +62,11 @@ class SSOListener extends AbstractAuthenticationListener
     public function setCsrfTokenManager(CsrfTokenManager $csrfTokenManager)
     {
         $this->csrfTokenManager = $csrfTokenManager;
+    }
+
+    public function setClientSecret(string $clientSecret)
+    {
+        $this->clientSecret = $clientSecret;
     }
 
     /**
@@ -106,12 +116,46 @@ class SSOListener extends AbstractAuthenticationListener
             return $this->attemptAuthenticationUsingCode($request);
         }
 
-        if ($this->currentSSOTokenIsExpired()) {
+        $token = $this->tokenStore->getToken();
+
+        if ($token instanceof SSOToken && $token->isExpired()) {
+            $refreshToken = $token->getRefreshToken();
+
             $this->tokenStore->setToken(null);
+
+            if ($refreshToken) {
+                return $this->attemptAuthenticationUsingRefreshToken($refreshToken);
+            }
         }
 
         return null;
     }
+
+    protected function attemptAuthenticationUsingRefreshToken($refreshToken)
+    {
+        try {
+            $tokenStruct = $this->authenticationApi->refreshTokenExchange($refreshToken);
+        } catch (ApiException $e) {
+            throw new AuthenticationException("Unable to authenticate", 0, $e);
+        }
+
+        $auth0Token = Token::create($tokenStruct);
+
+        $token = new SSOToken();
+        $token->setExpiresAt($auth0Token->getExpiresAt());
+        $token->setRefreshToken($refreshToken);
+
+        if ($auth0Token->getAccessToken()) {
+            $token->setAccessToken($auth0Token->getAccessToken());
+        }
+
+        if ($auth0Token->getIdToken()) {
+            $token->setIdToken(Claims::createFromJWT($auth0Token->getIdToken(), $this->clientSecret));
+        }
+
+        return $this->authenticationManager->authenticate($token);
+    }
+
 
     protected function attemptAuthenticationUsingCode(Request $request)
     {
@@ -158,7 +202,19 @@ class SSOListener extends AbstractAuthenticationListener
         $auth0Token = Token::create($tokenStruct);
 
         $token = new SSOToken();
-        $token->setAuth0Data($auth0Token);
+        $token->setExpiresAt($auth0Token->getExpiresAt());
+
+        if ($auth0Token->getAccessToken()) {
+            $token->setAccessToken($auth0Token->getAccessToken());
+        }
+
+        if ($auth0Token->getIdToken()) {
+            $token->setIdToken(Claims::createFromJWT($auth0Token->getIdToken(), $this->clientSecret));
+        }
+
+        if ($auth0Token->getRefreshToken()) {
+            $token->setRefreshToken($auth0Token->getRefreshToken());
+        }
 
         return $this->authenticationManager->authenticate($token);
     }
