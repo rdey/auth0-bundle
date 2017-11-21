@@ -30,7 +30,7 @@ class Configuration implements ConfigurationInterface
                     "Whether or not the SecurityBundle integration should be enabled. Set to false if and only if your app does not use SecurityBundle."
                 )->end()
                 ->arrayNode('scopes')
-                    ->scalarPrototype()->end()
+                    ->prototype('scalar')->end()
                     ->defaultValue(['openid'])
                     ->validate()
                         ->ifTrue(function($scopes) {

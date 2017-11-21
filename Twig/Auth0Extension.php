@@ -4,18 +4,31 @@ namespace Happyr\Auth0Bundle\Twig;
 
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 
-class StateParameterExtension extends \Twig_Extension
+class Auth0Extension extends \Twig_Extension
 {
     private $csrfTokenManager;
 
-    public function __construct(CsrfTokenManager $csrfTokenManager = null)
+    /**
+     * @var array
+     */
+    private $scopes;
+
+    public function __construct(array $scopes, CsrfTokenManager $csrfTokenManager = null)
     {
         $this->csrfTokenManager = $csrfTokenManager;
+        $this->scopes = $scopes;
     }
 
     public function getName()
     {
         return 'state_parameter_extension';
+    }
+
+    public function getGlobals()
+    {
+        return [
+            'auth0_scope' => implode($this->scopes, ' '),
+        ];
     }
 
     public function getFunctions()

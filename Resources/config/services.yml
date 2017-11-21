@@ -25,9 +25,10 @@ services:
         class: Auth0\SDK\API\Management
         factory: ["@happyr.auth0.api.management.factory", "create"]
 
-    happyr.auth0.twig.extension.state_parameter:
-        class: Happyr\Auth0Bundle\Twig\StateParameterExtension
+    happyr.auth0.twig.extension:
+        class: Happyr\Auth0Bundle\Twig\Auth0Extension
         arguments:
+            - %auth0.scope%
             - ~ #csrfTokenManager
         tags:
             - { name: twig.extension }
