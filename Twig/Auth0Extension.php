@@ -2,6 +2,7 @@
 
 namespace Happyr\Auth0Bundle\Twig;
 
+use Happyr\Auth0Bundle\SSOUrlGenerator;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 
 class Auth0Extension extends \Twig_Extension
@@ -12,16 +13,21 @@ class Auth0Extension extends \Twig_Extension
      * @var array
      */
     private $scopes;
+    /**
+     * @var SSOUrlGenerator
+     */
+    private $generator;
 
-    public function __construct(array $scopes, CsrfTokenManager $csrfTokenManager = null)
+    public function __construct(array $scopes, SSOUrlGenerator $generator, CsrfTokenManager $csrfTokenManager = null)
     {
         $this->csrfTokenManager = $csrfTokenManager;
         $this->scopes = $scopes;
+        $this->generator = $generator;
     }
 
     public function getName()
     {
-        return 'state_parameter_extension';
+        return 'auth0_extension';
     }
 
     public function getGlobals()
@@ -35,6 +41,7 @@ class Auth0Extension extends \Twig_Extension
     {
         return [
             new \Twig_SimpleFunction('state_parameter', [$this, 'stateParameter']),
+            new \Twig_SimpleFunction('sso_login_url', [$this, 'loginUrl']),
         ];
     }
 
@@ -51,5 +58,10 @@ class Auth0Extension extends \Twig_Extension
         }
 
         return base64_encode(json_encode($stateParameter));
+    }
+
+    public function loginUrl($returnUrl, array $options = [])
+    {
+        return $this->generator->generateUrl($returnUrl, $options);
     }
 }

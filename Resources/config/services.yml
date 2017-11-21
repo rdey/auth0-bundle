@@ -29,6 +29,15 @@ services:
         class: Happyr\Auth0Bundle\Twig\Auth0Extension
         arguments:
             - %auth0.scope%
+            - "@happyr_auth0.sso_url_generator"
             - ~ #csrfTokenManager
         tags:
             - { name: twig.extension }
+
+    happyr_auth0.sso_url_generator:
+        class: Happyr\Auth0Bundle\SSOUrlGenerator
+        arguments:
+            - "%auth0.domain%"
+            - "%auth0.client_id%"
+            - "%auth0.scope%"
+            - ~

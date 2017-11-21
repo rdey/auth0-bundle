@@ -2,6 +2,7 @@
 
 namespace Happyr\Auth0Bundle\Security\EntryPoint;
 
+use Happyr\Auth0Bundle\SSOUrlGenerator;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
@@ -53,22 +54,24 @@ class SSOEntryPoint implements AuthenticationEntryPointInterface
      * @var array
      */
     private $scope;
+    /**
+     * @var SSOUrlGenerator
+     */
+    private $ssoUrlGenerator;
 
     /**
      * @param HttpUtils $httpUtils
      * @param $auth0ClientId
      * @param string $auth0Domain
      */
-    public function __construct(CsrfTokenManager $csrfTokenManager = null, HttpUtils $httpUtils, $auth0ClientId, $auth0Domain, $callbackPath, array $scope, $loginPath, $useLocalLogin = false)
+    public function __construct(CsrfTokenManager $csrfTokenManager = null, HttpUtils $httpUtils, SSOUrlGenerator $ssoUrlGenerator, $callbackPath, $loginPath, $useLocalLogin = false)
     {
         $this->csrfTokenManager = $csrfTokenManager;
         $this->httpUtils = $httpUtils;
-        $this->auth0ClientId = $auth0ClientId;
-        $this->auth0Domain = $auth0Domain;
         $this->callbackPath = $callbackPath;
-        $this->scope = $scope;
         $this->loginPath = $loginPath;
         $this->useLocalLogin = $useLocalLogin;
+        $this->ssoUrlGenerator = $ssoUrlGenerator;
     }
 
     /**
@@ -80,24 +83,6 @@ class SSOEntryPoint implements AuthenticationEntryPointInterface
             return $this->httpUtils->createRedirectResponse($request, $this->loginPath);
         }
 
-        $query = [
-            'client_id' => $this->auth0ClientId,
-            'redirect_uri' => $this->httpUtils->generateUri($request, $this->callbackPath),
-            'response_type' => 'code',
-            'language' => $request->getLocale(),
-            'scope' => implode(' ', $this->scope),
-        ];
-
-        if ($this->csrfTokenManager) {
-            $csrfToken = $this->csrfTokenManager->getToken('auth0-sso');
-
-            $stateParameter = [
-                'nonce' => $csrfToken->getValue(),
-            ];
-
-            $query['state'] = base64_encode(json_encode($stateParameter));
-        }
-
-        return new RedirectResponse(sprintf('https://%s/authorize?%s', $this->auth0Domain, http_build_query($query)));
+        return new RedirectResponse($this->ssoUrlGenerator->generateUrl($this->httpUtils->generateUri($request, $this->callbackPath)));
     }
 }
