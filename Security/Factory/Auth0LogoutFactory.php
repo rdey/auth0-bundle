@@ -7,6 +7,7 @@ use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\Factory\SecurityF
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\DefinitionDecorator;
 use Symfony\Component\DependencyInjection\Reference;
 
 final class Auth0LogoutFactory implements SecurityFactoryInterface
@@ -29,7 +30,8 @@ final class Auth0LogoutFactory implements SecurityFactoryInterface
     {
         $listenerKeys[] = 'logout';
         $listenerId = 'happyr_auth0.security.logout_listener.'.$id;
-        $listener = $container->setDefinition($listenerId, new ChildDefinition('happyr.auth0.security.authentication.listener.logout'));
+
+        $listener = $container->setDefinition($listenerId, new DefinitionDecorator('happyr.auth0.security.authentication.listener.logout'));
         $listener->replaceArgument(3, array(
             'csrf_parameter' => $config['csrf_parameter'],
             'csrf_token_id' => $config['csrf_token_id'],
@@ -39,7 +41,7 @@ final class Auth0LogoutFactory implements SecurityFactoryInterface
 
         // always use default success handler
         $logoutSuccessHandlerId = 'happyr_auth0.security.logout.success_handler.'.$id;
-        $logoutSuccessHandler = $container->setDefinition($logoutSuccessHandlerId, new ChildDefinition('security.logout.success_handler'));
+        $logoutSuccessHandler = $container->setDefinition($logoutSuccessHandlerId, new DefinitionDecorator('security.logout.success_handler'));
         $logoutSuccessHandler->replaceArgument(1, $config['target']);
         $listener->replaceArgument(2, new Reference($logoutSuccessHandlerId));
 
@@ -56,7 +58,7 @@ final class Auth0LogoutFactory implements SecurityFactoryInterface
         // add cookie logout handler
         if (count($config['delete_cookies']) > 0) {
             $cookieHandlerId = 'happyr_auth0.security.logout.handler.cookie_clearing.'.$id;
-            $cookieHandler = $container->setDefinition($cookieHandlerId, new ChildDefinition('security.logout.handler.cookie_clearing'));
+            $cookieHandler = $container->setDefinition($cookieHandlerId, new DefinitionDecorator('security.logout.handler.cookie_clearing'));
             $cookieHandler->addArgument($config['delete_cookies']);
 
             $listener->addMethodCall('addHandler', array(new Reference($cookieHandlerId)));
