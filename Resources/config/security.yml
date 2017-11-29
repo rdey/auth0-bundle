@@ -23,3 +23,14 @@ services:
             - ~
             - ~
         abstract: true
+
+    happyr.auth0.security.authentication.provider.null:
+        class: Happyr\Auth0Bundle\Security\Authentication\Provider\NullProvider
+        public: false
+
+    happyr.auth0.security.authentication.listener.logout:
+        class: Happyr\Auth0Bundle\Security\Firewall\Auth0LogoutListener
+        parent: security.logout_listener
+        abstract: true
+        calls:
+            - [ 'setAuth0Domain', ["%auth0.domain%"]]
