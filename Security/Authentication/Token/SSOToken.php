@@ -8,6 +8,9 @@ use Symfony\Component\Security\Core\Role\Role;
 
 class SSOToken extends AbstractToken
 {
+    /** @var bool  */
+    private $createdFromRefreshToken = false;
+
     /** @var  string|null */
     private $accessToken;
 
@@ -95,6 +98,16 @@ class SSOToken extends AbstractToken
         $this->claims = $claims;
 
         return $this;
+    }
+
+    public function wasCreatedFromRefreshToken(): bool
+    {
+        return $this->createdFromRefreshToken;
+    }
+
+    public function setCreatedFromRefreshToken(bool $createdFromRefreshToken)
+    {
+        $this->createdFromRefreshToken = $createdFromRefreshToken;
     }
 
     /**

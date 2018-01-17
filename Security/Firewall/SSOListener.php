@@ -142,6 +142,7 @@ class SSOListener extends AbstractAuthenticationListener
         $auth0Token = Token::create($tokenStruct);
 
         $token = new SSOToken();
+        $token->setCreatedFromRefreshToken(true);
         $token->setExpiresAt($auth0Token->getExpiresAt());
         $token->setRefreshToken($refreshToken);
 
