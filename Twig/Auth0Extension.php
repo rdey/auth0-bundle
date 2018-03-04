@@ -41,9 +41,30 @@ class Auth0Extension extends \Twig_Extension
     {
         return [
             new \Twig_SimpleFunction('state_parameter', [$this, 'stateParameter']),
+            new \Twig_SimpleFunction('sso_params', [$this, 'ssoParams']),
             new \Twig_SimpleFunction('sso_login_url', [$this, 'loginUrl']),
         ];
     }
+
+    public function ssoParams()
+    {
+
+        if ($this->csrfTokenManager && $this->generator) {
+            $csrfToken = $this->csrfTokenManager->getToken('auth0-sso');
+
+            $token = $csrfToken->getValue();
+            $domain = $this->generator->getAuth0Domain();
+            $client_id = $this->generator->getAuth0ClientId();
+            return [
+                'token' => $token,
+                'domain' => $domain,
+                'client_id' => $client_id
+            ];
+        }
+
+        return [];
+    }
+
 
     public function stateParameter($uri)
     {
