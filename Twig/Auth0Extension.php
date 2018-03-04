@@ -64,7 +64,6 @@ class Auth0Extension extends \Twig_Extension
         return [];
     }
 
-
     public function stateParameter($uri)
     {
         $stateParameter = [
