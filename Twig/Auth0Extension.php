@@ -49,14 +49,14 @@ class Auth0Extension extends \Twig_Extension
     public function ssoParams()
     {
 
-        if ($this->csrfTokenManager && $this->generator) {
+        if ($this->csrfTokenManager) {
             $csrfToken = $this->csrfTokenManager->getToken('auth0-sso');
 
             $token = $csrfToken->getValue();
             $domain = $this->generator->getAuth0Domain();
             $client_id = $this->generator->getAuth0ClientId();
             return [
-                'token' => $token,
+                'csrf_token' => $token,
                 'domain' => $domain,
                 'client_id' => $client_id
             ];

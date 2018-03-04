@@ -51,10 +51,12 @@ class SSOUrlGenerator
 
         return sprintf('https://%s/authorize?%s', $this->auth0Domain, http_build_query($query));
     }
+
     public function getAuth0Domain()
     {
         return $this->auth0Domain;
     }
+
     public function getAuth0ClientId()
     {
         return $this->auth0ClientId;
