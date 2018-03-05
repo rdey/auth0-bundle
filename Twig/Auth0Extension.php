@@ -17,12 +17,18 @@ class Auth0Extension extends \Twig_Extension
      * @var SSOUrlGenerator
      */
     private $generator;
+    /** @var  string */
+    protected $auth0Domain;
+    /** @var  string */
+    protected $auth0ClientId;
 
-    public function __construct(array $scopes, SSOUrlGenerator $generator, CsrfTokenManager $csrfTokenManager = null)
+    public function __construct(array $scopes, SSOUrlGenerator $generator, $auth0Domain, $auth0ClientId, CsrfTokenManager $csrfTokenManager = null)
     {
         $this->csrfTokenManager = $csrfTokenManager;
         $this->scopes = $scopes;
         $this->generator = $generator;
+        $this->auth0Domain = $auth0Domain;
+        $this->auth0ClientId = $auth0ClientId;
     }
 
     public function getName()
@@ -49,15 +55,10 @@ class Auth0Extension extends \Twig_Extension
     public function ssoParams()
     {
         if ($this->csrfTokenManager) {
-            $csrfToken = $this->csrfTokenManager->getToken('auth0-sso');
-
-            $csrf_token = $csrfToken->getValue();
-            $domain = $this->generator->getAuth0Domain();
-            $client_id = $this->generator->getAuth0ClientId();
             return [
-                'csrf_token' => $csrf_token,
-                'domain' => $domain,
-                'client_id' => $client_id
+                'csrf_token' => $this->csrfTokenManager->getToken('auth0-sso')->getValue(),
+                'domain' => $this->auth0Domain,
+                'client_id' => $this->auth0ClientId
             ];
         }
 
