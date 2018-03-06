@@ -156,7 +156,14 @@ class SSOToken extends AbstractToken
      */
     public function unserialize($serialized)
     {
-        list($user, $this->claims, $isAuthenticated, $this->storedRoles, $attributes, $this->accessToken, $this->expiresAt, $this->refreshToken, $this->createdFromRefreshToken) = unserialize($serialized);
+        $data = unserialize($serialized);
+        if (count($data) === 8) {
+            list($user, $this->claims, $isAuthenticated, $this->storedRoles, $attributes, $this->accessToken, $this->expiresAt, $this->refreshToken) = $data;
+            $this->createdFromRefreshToken = false;
+        } else {
+            list($user, $this->claims, $isAuthenticated, $this->storedRoles, $attributes, $this->accessToken, $this->expiresAt, $this->refreshToken, $this->createdFromRefreshToken) = unserialize($data);
+        }
+
         if ($user) {
             $this->setUser($user);
         }
