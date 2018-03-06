@@ -161,7 +161,7 @@ class SSOToken extends AbstractToken
             list($user, $this->claims, $isAuthenticated, $this->storedRoles, $attributes, $this->accessToken, $this->expiresAt, $this->refreshToken) = $data;
             $this->createdFromRefreshToken = false;
         } else {
-            list($user, $this->claims, $isAuthenticated, $this->storedRoles, $attributes, $this->accessToken, $this->expiresAt, $this->refreshToken, $this->createdFromRefreshToken) = unserialize($data);
+            list($user, $this->claims, $isAuthenticated, $this->storedRoles, $attributes, $this->accessToken, $this->expiresAt, $this->refreshToken, $this->createdFromRefreshToken) = $data;
         }
 
         if ($user) {
