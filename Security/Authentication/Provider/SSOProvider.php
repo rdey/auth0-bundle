@@ -62,6 +62,7 @@ class SSOProvider implements AuthenticationProviderInterface
             ->setExpiresAt($token->getExpiresAt())
             ->setIdToken($token->getIdToken())
             ->setRefreshToken($token->getRefreshToken())
+            ->setCreatedFromRefreshToken($token->wasCreatedFromRefreshToken())
             ->setAuthenticated(true);
 
         return $authenticatedToken;

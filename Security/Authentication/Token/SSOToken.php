@@ -105,9 +105,11 @@ class SSOToken extends AbstractToken
         return $this->createdFromRefreshToken;
     }
 
-    public function setCreatedFromRefreshToken(bool $createdFromRefreshToken)
+    public function setCreatedFromRefreshToken(bool $createdFromRefreshToken): SSOToken
     {
         $this->createdFromRefreshToken = $createdFromRefreshToken;
+
+        return $this;
     }
 
     /**
@@ -144,6 +146,7 @@ class SSOToken extends AbstractToken
                 $this->accessToken,
                 $this->expiresAt,
                 $this->refreshToken,
+                $this->createdFromRefreshToken,
             ]
         );
     }
@@ -153,7 +156,7 @@ class SSOToken extends AbstractToken
      */
     public function unserialize($serialized)
     {
-        list($user, $this->claims, $isAuthenticated, $this->storedRoles, $attributes, $this->accessToken, $this->expiresAt, $this->refreshToken) = unserialize($serialized);
+        list($user, $this->claims, $isAuthenticated, $this->storedRoles, $attributes, $this->accessToken, $this->expiresAt, $this->refreshToken, $this->createdFromRefreshToken) = unserialize($serialized);
         if ($user) {
             $this->setUser($user);
         }
