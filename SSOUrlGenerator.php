@@ -38,13 +38,15 @@ class SSOUrlGenerator
         ];
 
         if ($this->csrfTokenManager) {
+            if (isset($options['state'])) {
+                $state = json_decode(base64_decode($options['state']), true);
+            }
+
             $csrfToken = $this->csrfTokenManager->getToken('auth0-sso');
 
-            $stateParameter = [
-                'nonce' => $csrfToken->getValue(),
-            ];
+            $state['nonce'] = $csrfToken->getValue();
 
-            $query['state'] = base64_encode(json_encode($stateParameter));
+            $options['state'] = base64_encode(json_encode($state));
         }
 
         $query = array_merge($query, $options);

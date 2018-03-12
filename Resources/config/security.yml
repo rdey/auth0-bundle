@@ -10,7 +10,6 @@ services:
         abstract: true
         calls:
           - [ 'setAuthenticationApi', ["@happyr.auth0.api.authentication"]]
-          - [ 'setCsrfTokenManager', ["@security.csrf.token_manager"]]
           - [ 'setClientSecret', ['%auth0.client_secret%']]
 
     happyr.auth0.security.authentication.entry_point.oauth:
