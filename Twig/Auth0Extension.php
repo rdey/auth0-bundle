@@ -5,7 +5,7 @@ namespace Happyr\Auth0Bundle\Twig;
 use Happyr\Auth0Bundle\SSOUrlGenerator;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 
-class Auth0Extension extends \Twig_Extension
+class Auth0Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterface
 {
     private $csrfTokenManager;
 
