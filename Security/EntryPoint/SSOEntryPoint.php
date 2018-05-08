@@ -83,6 +83,15 @@ class SSOEntryPoint implements AuthenticationEntryPointInterface
             return $this->httpUtils->createRedirectResponse($request, $this->loginPath);
         }
 
-        return new RedirectResponse($this->ssoUrlGenerator->generateUrl($this->httpUtils->generateUri($request, $this->callbackPath)));
+        $options = [];
+        if ($returnUrl = $request->query->get('returnUrl')) {
+            $stateParameter = [
+                'returnUrl' => $returnUrl,
+            ];
+
+            $options = ['state' => base64_encode(json_encode($stateParameter))];
+        }
+
+        return new RedirectResponse($this->ssoUrlGenerator->generateUrl($this->httpUtils->generateUri($request, $this->callbackPath), $options));
     }
 }
