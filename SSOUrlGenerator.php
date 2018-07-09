@@ -1,34 +1,30 @@
 <?php
-declare(strict_types=1);
 
 namespace Happyr\Auth0Bundle;
 
+use Happyr\Auth0Bundle\Security\CsrfProtection;
 
-use Symfony\Component\Security\Csrf\CsrfTokenManager;
 
 class SSOUrlGenerator
 {
-    /** @var  string */
+    /** @var string */
     protected $auth0Domain;
-    /** @var  string */
+    /** @var string */
     protected $auth0ClientId;
-    /** @var  string */
+    /** @var string */
     protected $scope;
-    /** @var CsrfTokenManager|null */
-    protected $csrfTokenManager;
+    /** @var CsrfProtection */
+    protected $csrfProtection;
 
-    /**
-     * SSOUrlGenerator constructor.
-     */
-    public function __construct($auth0Domain, $auth0ClientId, $scope, ?CsrfTokenManager $csrfTokenManager)
+    public function __construct($auth0Domain, $auth0ClientId, $scope, CsrfProtection $csrfProtection)
     {
         $this->auth0Domain = $auth0Domain;
         $this->auth0ClientId = $auth0ClientId;
         $this->scope = $scope;
-        $this->csrfTokenManager = $csrfTokenManager;
+        $this->csrfProtection = $csrfProtection;
     }
 
-    public function generateUrl($redirectUri, $options = [])
+    public function generateUrl($redirectUri, array $options = [])
     {
         $query = [
             'client_id' => $this->auth0ClientId,
@@ -37,12 +33,12 @@ class SSOUrlGenerator
             'scope' => implode(' ', $this->scope),
         ];
 
-        if ($this->csrfTokenManager) {
+        if ($this->csrfProtection->isEnabled()) {
             if (isset($options['state'])) {
                 $state = json_decode(base64_decode($options['state']), true);
             }
 
-            $csrfToken = $this->csrfTokenManager->getToken('auth0-sso');
+            $csrfToken = $this->csrfProtection->manager()->getToken('auth0-sso');
 
             $state['nonce'] = $csrfToken->getValue();
 

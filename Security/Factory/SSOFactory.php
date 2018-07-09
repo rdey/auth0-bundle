@@ -3,9 +3,9 @@
 namespace Happyr\Auth0Bundle\Security\Factory;
 
 use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\Factory\AbstractFactory;
+use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\DependencyInjection\DefinitionDecorator;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 
 /**
@@ -17,7 +17,7 @@ class SSOFactory extends AbstractFactory
     {
         $providerId = 'happyr.auth0.security.authentication.provider.sso.'.$id;
         $container
-            ->setDefinition($providerId, new DefinitionDecorator('happyr.auth0.security.authentication.provider.sso'))
+            ->setDefinition($providerId, new ChildDefinition('happyr.auth0.security.authentication.provider.sso'))
             ->replaceArgument(0, new Reference($userProviderId))
         ;
 
@@ -29,10 +29,10 @@ class SSOFactory extends AbstractFactory
         $entryPointId = 'happyr.auth0.security.authentication.entry_point.sso.'.$id;
 
         $container
-            ->setDefinition($entryPointId, new DefinitionDecorator('happyr.auth0.security.authentication.entry_point.oauth'))
-            ->replaceArgument(3, $config['check_path'])
-            ->replaceArgument(4, $config['login_path'])
-            ->replaceArgument(5, $config['use_local_login'])
+            ->setDefinition($entryPointId, new ChildDefinition('happyr.auth0.security.authentication.entry_point.oauth'))
+            ->replaceArgument(2, $config['check_path'])
+            ->replaceArgument(3, $config['login_path'])
+            ->replaceArgument(4, $config['use_local_login'])
         ;
 
         return $entryPointId;

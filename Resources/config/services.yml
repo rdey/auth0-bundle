@@ -32,7 +32,7 @@ services:
             - "@happyr_auth0.sso_url_generator"
             - "%auth0.domain%"
             - "%auth0.client_id%"
-            - ~ #csrfTokenManager
+            - "@happyr.auth0.security.csrf_protection"
         tags:
             - { name: twig.extension }
 
@@ -42,4 +42,10 @@ services:
             - "%auth0.domain%"
             - "%auth0.client_id%"
             - "%auth0.scope%"
-            - ~
+            - "@happyr.auth0.security.csrf_protection"
+
+    happyr.auth0.security.csrf_protection:
+        class: Happyr\Auth0Bundle\Security\CsrfProtection
+        arguments:
+            - ~ # csrf protection flag
+            - ~ # csrf token manager

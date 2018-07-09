@@ -9,6 +9,7 @@ use Auth0\SDK\Exception\CoreException;
 use Happyr\Auth0Bundle\Model\Authentication\Claims;
 use Happyr\Auth0Bundle\Model\Authorization\Token\Token;
 use Happyr\Auth0Bundle\Security\Authentication\Token\SSOToken;
+use Happyr\Auth0Bundle\Security\CsrfProtection;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
@@ -40,9 +41,9 @@ class SSOListener extends AbstractAuthenticationListener
     private $callbackPath;
 
     /**
-     * @var CsrfTokenManager
+     * @var CsrfProtection
      */
-    private $csrfTokenManager;
+    private $csrfProtection;
 
     /** @var string */
     private $clientSecret;
@@ -59,9 +60,9 @@ class SSOListener extends AbstractAuthenticationListener
         parent::__construct($tokenStorage, $authenticationManager, $sessionStrategy, $httpUtils, $providerKey, $successHandler, $failureHandler, $options, $logger, $dispatcher);
     }
 
-    public function setCsrfTokenManager(CsrfTokenManager $csrfTokenManager)
+    public function setCsrfProtection(CsrfProtection $csrfProtection)
     {
-        $this->csrfTokenManager = $csrfTokenManager;
+        $this->csrfProtection = $csrfProtection;
     }
 
     public function setClientSecret(string $clientSecret)
@@ -169,12 +170,12 @@ class SSOListener extends AbstractAuthenticationListener
             $stateParameter = json_decode(base64_decode($state), true);
         }
 
-        if ($this->csrfTokenManager) {
+        if ($this->csrfProtection->isEnabled()) {
             if (null === $stateParameter || !isset($stateParameter['nonce'])) {
                 throw new AuthenticationException('No state nonce in the request.');
             }
 
-            if (!$this->csrfTokenManager->isTokenValid(new CsrfToken('auth0-sso', $stateParameter['nonce']))) {
+            if (!$this->csrfProtection->manager()->isTokenValid(new CsrfToken('auth0-sso', $stateParameter['nonce']))) {
                 throw new AuthenticationException('Invalid CSRF token');
             }
         }

@@ -2,13 +2,15 @@
 
 namespace Happyr\Auth0Bundle\Twig;
 
+use Happyr\Auth0Bundle\Security\CsrfProtection;
 use Happyr\Auth0Bundle\SSOUrlGenerator;
-use Symfony\Component\Security\Csrf\CsrfTokenManager;
 
 class Auth0Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterface
 {
-    private $csrfTokenManager;
-
+    /**
+     * @var CsrfProtection
+     */
+    private $csrfProtection;
     /**
      * @var array
      */
@@ -22,9 +24,9 @@ class Auth0Extension extends \Twig_Extension implements \Twig_Extension_GlobalsI
     /** @var  string */
     protected $auth0ClientId;
 
-    public function __construct(array $scopes, SSOUrlGenerator $generator, $auth0Domain, $auth0ClientId, CsrfTokenManager $csrfTokenManager = null)
+    public function __construct(array $scopes, SSOUrlGenerator $generator, $auth0Domain, $auth0ClientId, CsrfProtection $csrfProtection)
     {
-        $this->csrfTokenManager = $csrfTokenManager;
+        $this->csrfProtection = $csrfProtection;
         $this->scopes = $scopes;
         $this->generator = $generator;
         $this->auth0Domain = $auth0Domain;
@@ -54,15 +56,15 @@ class Auth0Extension extends \Twig_Extension implements \Twig_Extension_GlobalsI
 
     public function ssoParams()
     {
-        if ($this->csrfTokenManager) {
-            return [
-                'csrf_token' => $this->csrfTokenManager->getToken('auth0-sso')->getValue(),
-                'domain' => $this->auth0Domain,
-                'client_id' => $this->auth0ClientId
-            ];
+        if (!$this->csrfProtection->isEnabled()) {
+            return [];
         }
 
-        return [];
+        return [
+            'csrf_token' => $this->csrfProtection->manager()->getToken('auth0-sso')->getValue(),
+            'domain' => $this->auth0Domain,
+            'client_id' => $this->auth0ClientId
+        ];
     }
 
     public function stateParameter($uri)
@@ -71,8 +73,8 @@ class Auth0Extension extends \Twig_Extension implements \Twig_Extension_GlobalsI
             'returnUrl' => $uri,
         ];
 
-        if ($this->csrfTokenManager) {
-            $csrfToken = $this->csrfTokenManager->getToken('auth0-sso');
+        if ($this->csrfProtection->isEnabled()) {
+            $csrfToken = $this->csrfProtection->manager()->getToken('auth0-sso');
 
             $stateParameter['nonce'] = $csrfToken->getValue();
         }

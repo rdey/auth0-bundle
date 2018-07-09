@@ -47,15 +47,8 @@ class HappyrAuth0Extension extends Extension
                 ->replaceArgument(3, new Reference($config['httplug_client_service']));
         }
 
-        if ($config['csrf_protection']) {
-            $container->getDefinition('happyr.auth0.security.authentication.listener.sso')
-                ->addMethodCall('setCsrfTokenManager', [new Reference('security.csrf.token_manager')]);
-            $container->getDefinition('happyr.auth0.security.authentication.entry_point.oauth')
-                ->replaceArgument(0, new Reference('security.csrf.token_manager'));
-            $container->getDefinition('happyr.auth0.twig.extension')
-                ->replaceArgument(4, new Reference('security.csrf.token_manager'));
-            $container->getDefinition('happyr_auth0.sso_url_generator')
-                ->replaceArgument(3, new Reference('security.csrf.token_manager'));
-        }
+        $container->getDefinition('happyr.auth0.security.csrf_protection')
+            ->replaceArgument(0, $config['csrf_protection'])
+            ->replaceArgument(1, new Reference('security.csrf.token_manager'));
     }
 }

@@ -25,7 +25,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('client_secret')->isRequired()->cannotBeEmpty()->end()
                 ->scalarNode('cache')->defaultNull()->end()
                 ->scalarNode('httplug_client_service')->defaultNull()->end()
-                ->booleanNode('csrf_protection')->defaultTrue()->end()
+                ->scalarNode('csrf_protection')->defaultTrue()->end()
                 ->booleanNode('security')->defaultTrue()->info(
                     "Whether or not the SecurityBundle integration should be enabled. Set to false if and only if your app does not use SecurityBundle."
                 )->end()

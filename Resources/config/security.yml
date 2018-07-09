@@ -11,11 +11,11 @@ services:
         calls:
           - [ 'setAuthenticationApi', ["@happyr.auth0.api.authentication"]]
           - [ 'setClientSecret', ['%auth0.client_secret%']]
+          - [ 'setCsrfProtection', ['@happyr.auth0.security.csrf_protection']]
 
     happyr.auth0.security.authentication.entry_point.oauth:
         class: Happyr\Auth0Bundle\Security\EntryPoint\SSOEntryPoint
         arguments:
-            - ~ # CsrfTokenManager
             - "@security.http_utils"
             - "@happyr_auth0.sso_url_generator"
             - ~
