@@ -28,6 +28,7 @@ class Configuration implements ConfigurationInterface
                 ->booleanNode('security')->defaultTrue()->info(
                     "Whether or not the SecurityBundle integration should be enabled. Set to false if and only if your app does not use SecurityBundle."
                 )->end()
+                ->booleanNode('csrf_protection')->defaultTrue()->end()
             ->end();
 
         return $treeBuilder;

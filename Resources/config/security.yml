@@ -19,4 +19,5 @@ services:
             - "@security.http_utils"
             - "%auth0.client_id%"
             - "%auth0.domain%"
+            - ~ # CSRF Protection set by configuration
         abstract: true

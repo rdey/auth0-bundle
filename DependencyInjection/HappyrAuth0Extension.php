@@ -28,6 +28,12 @@ class HappyrAuth0Extension extends Extension
 
         if ($config['security']) {
             $loader->load('security.yml');
+
+            $container->getDefinition('happyr.auth0.security.authentication.entry_point.oauth')
+                ->replaceArgument(4, $config['csrf_protection']);
+
+            $container->getDefinition('happyr.auth0.security.authentication.listener.sso')
+                ->addMethodCall('setCsrfProtection', $config['csrf_protection']);
         }
 
         // Add the secret key as parameter
