@@ -2,6 +2,7 @@
 
 namespace Happyr\Auth0Bundle\Security\EntryPoint;
 
+use GuzzleHttp\Psr7\Uri;
 use Happyr\Auth0Bundle\SSOUrlGenerator;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -64,15 +65,23 @@ class SSOEntryPoint implements AuthenticationEntryPointInterface
             return $this->httpUtils->createRedirectResponse($request, $this->loginPath);
         }
 
+        $cid = "";
+        if ($request->cookies->has('_ga')) {
+            $ga = $request->cookies->get('_ga');
+            if (preg_match('/GA\d\.\d.(.*?)', $ga, $matches)) {
+                $cid = "?cid=".$matches[1];
+            }
+        }
+
         $options = [];
         if ($returnUrl = $request->query->get('returnUrl')) {
             $stateParameter = [
                 'returnUrl' => $returnUrl,
             ];
 
-            $options = ['state' => base64_encode(json_encode($stateParameter))];
+            $options['state'] = base64_encode(json_encode($stateParameter));
         }
 
-        return new RedirectResponse($this->ssoUrlGenerator->generateUrl($this->httpUtils->generateUri($request, $this->callbackPath), $options));
+        return new RedirectResponse($this->ssoUrlGenerator->generateUrl($this->httpUtils->generateUri($request, $this->callbackPath.$cid), $options));
     }
 }
