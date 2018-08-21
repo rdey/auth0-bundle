@@ -30,9 +30,9 @@ class SSOFactory extends AbstractFactory
 
         $container
             ->setDefinition($entryPointId, new ChildDefinition('happyr.auth0.security.authentication.entry_point.oauth'))
-            ->replaceArgument(2, $config['check_path'])
-            ->replaceArgument(3, $config['login_path'])
-            ->replaceArgument(4, $config['use_local_login'])
+            ->replaceArgument(3, $config['check_path'])
+            ->replaceArgument(4, $config['login_path'])
+            ->replaceArgument(5, $config['use_local_login'])
         ;
 
         return $entryPointId;
