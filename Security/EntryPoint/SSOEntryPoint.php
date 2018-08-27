@@ -65,11 +65,11 @@ class SSOEntryPoint implements AuthenticationEntryPointInterface
             return $this->httpUtils->createRedirectResponse($request, $this->loginPath);
         }
 
-        $cid = "";
+        $cid = '';
         if ($request->cookies->has('_ga')) {
             $ga = $request->cookies->get('_ga');
-            if (preg_match('/GA\d\.\d.(.*?)', $ga, $matches)) {
-                $cid = "?cid=".$matches[1];
+            if (preg_match('/GA\d\.\d\.([\d.]+)/', $ga, $matches)) {
+                $cid = '?cid=' . $matches[1];
             }
         }
 
@@ -82,6 +82,14 @@ class SSOEntryPoint implements AuthenticationEntryPointInterface
             $options['state'] = base64_encode(json_encode($stateParameter));
         }
 
-        return new RedirectResponse($this->ssoUrlGenerator->generateUrl($this->httpUtils->generateUri($request, $this->callbackPath.$cid), $options));
+        return new RedirectResponse(
+            $this->ssoUrlGenerator->generateUrl(
+                $this->httpUtils->generateUri(
+                    $request,
+                    $this->callbackPath
+                ) . $cid,
+                $options
+            )
+        );
     }
 }
