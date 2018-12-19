@@ -6,7 +6,7 @@ use Happyr\Auth0Bundle\Model\Authentication\Claims;
 use Symfony\Component\Security\Core\Authentication\Token\AbstractToken;
 use Symfony\Component\Security\Core\Role\Role;
 
-class SSOToken extends AbstractToken
+class SSOToken extends AbstractToken implements HasClaimsInterface
 {
     /** @var bool  */
     private $createdFromRefreshToken = false;
@@ -91,6 +91,11 @@ class SSOToken extends AbstractToken
     public function getIdToken(): ?Claims
     {
         return $this->claims;
+    }
+
+    public function getClaims(): ?Claims
+    {
+        return $this->getIdToken();
     }
 
     public function setIdToken(?Claims $claims): SSOToken
