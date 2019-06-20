@@ -176,6 +176,24 @@ class SSOToken extends AbstractToken implements HasClaimsInterface
         $this->setAttributes($attributes);
     }
 
+    public function getRoleNames(): array
+    {
+        $allRoles = array_merge(parent::getRoleNames(), $this->storedRoles);
+        $uniqueRoles = [];
+
+        /** @var Role $role */
+        foreach ($allRoles as $role) {
+            $name = is_string($role) ? $role : $role->getRole();
+            $uniqueRoles[$name] = true;
+        }
+
+        return array_keys($uniqueRoles);
+    }
+
+
+    /**
+     * This function is deprecated by Symfony 4.3.
+     */
     public function getRoles()
     {
         $allRoles = array_merge(parent::getRoles(), $this->storedRoles);
