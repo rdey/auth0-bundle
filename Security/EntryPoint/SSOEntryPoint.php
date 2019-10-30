@@ -2,7 +2,6 @@
 
 namespace Happyr\Auth0Bundle\Security\EntryPoint;
 
-use GuzzleHttp\Psr7\Uri;
 use Happyr\Auth0Bundle\SSOUrlGenerator;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
