@@ -41,7 +41,7 @@ class Auth0Extension extends \Twig_Extension implements \Twig_Extension_GlobalsI
     public function getGlobals()
     {
         return [
-            'auth0_scope' => implode($this->scopes, ' '),
+            'auth0_scope' => implode(' ', $this->scopes),
         ];
     }
 
