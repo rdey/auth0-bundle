@@ -4,8 +4,11 @@ namespace Happyr\Auth0Bundle\Twig;
 
 use Happyr\Auth0Bundle\Security\CsrfProtection;
 use Happyr\Auth0Bundle\SSOUrlGenerator;
+use Twig\Extension\AbstractExtension;
+use Twig\Extension\GlobalsInterface;
+use Twig\TwigFunction;
 
-class Auth0Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterface
+class Auth0Extension extends AbstractExtension implements GlobalsInterface
 {
     /**
      * @var CsrfProtection
@@ -38,7 +41,7 @@ class Auth0Extension extends \Twig_Extension implements \Twig_Extension_GlobalsI
         return 'auth0_extension';
     }
 
-    public function getGlobals()
+    public function getGlobals(): array
     {
         return [
             'auth0_scope' => implode(' ', $this->scopes),
@@ -48,9 +51,9 @@ class Auth0Extension extends \Twig_Extension implements \Twig_Extension_GlobalsI
     public function getFunctions()
     {
         return [
-            new \Twig_SimpleFunction('state_parameter', [$this, 'stateParameter']),
-            new \Twig_SimpleFunction('sso_params', [$this, 'ssoParams']),
-            new \Twig_SimpleFunction('sso_login_url', [$this, 'loginUrl']),
+            new TwigFunction('state_parameter', [$this, 'stateParameter']),
+            new TwigFunction('sso_params', [$this, 'ssoParams']),
+            new TwigFunction('sso_login_url', [$this, 'loginUrl']),
         ];
     }
 

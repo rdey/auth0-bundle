@@ -1,51 +1,52 @@
 
 services:
-    happyr.auth0.api.authentication:
-        class: Auth0\SDK\API\Authentication
+    Auth0\SDK\API\Authentication:
         arguments:
-            - "https://%auth0.domain%"
-            - "%auth0.client_id%"
-            - "%auth0.client_secret%"
+            - 'https://%auth0.domain%'
+            - '%auth0.client_id%'
+            - '%auth0.client_secret%'
             - ~ #audience
             - ~ #scope
             - ~ #httpclient
 
-    happyr.auth0.api.management.factory:
-        class: Happyr\Auth0Bundle\Factory\ManagementFactory
+    Happyr\Auth0Bundle\Factory\ManagementFactory:
         arguments:
-            - "@happyr.auth0.api.authentication"
-            - "%auth0.domain%"
-            - "@?auth0.cache"
+            - '@Auth0\SDK\API\Authentication'
+            - '%auth0.domain%'
+            - '@?auth0.cache'
             - ~ #httpclient
-            - "@?logger"
+            - '@?logger'
         tags:
             - { name: monolog.logger, channel: happyr_auth0 }
 
-    happyr.auth0.api.management:
-        class: Auth0\SDK\API\Management
-        factory: ["@happyr.auth0.api.management.factory", "create"]
+    Auth0\SDK\API\Management:
+        factory: ['@Happyr\Auth0Bundle\Factory\ManagementFactory', 'create']
 
-    happyr.auth0.twig.extension:
-        class: Happyr\Auth0Bundle\Twig\Auth0Extension
+    Happyr\Auth0Bundle\Twig\Auth0Extension:
         arguments:
-            - "%auth0.scope%"
-            - "@happyr_auth0.sso_url_generator"
-            - "%auth0.domain%"
-            - "%auth0.client_id%"
-            - "@happyr.auth0.security.csrf_protection"
+            - '%auth0.scope%'
+            - '@Happyr\Auth0Bundle\SSOUrlGenerator'
+            - '%auth0.domain%'
+            - '%auth0.client_id%'
+            - '@Happyr\Auth0Bundle\Security\CsrfProtection'
         tags:
             - { name: twig.extension }
 
-    happyr_auth0.sso_url_generator:
-        class: Happyr\Auth0Bundle\SSOUrlGenerator
+    Happyr\Auth0Bundle\SSOUrlGenerator:
         arguments:
-            - "%auth0.domain%"
-            - "%auth0.client_id%"
-            - "%auth0.scope%"
-            - "@happyr.auth0.security.csrf_protection"
+            - '%auth0.domain%'
+            - '%auth0.client_id%'
+            - '%auth0.scope%'
+            - '@Happyr\Auth0Bundle\Security\CsrfProtection'
 
-    happyr.auth0.security.csrf_protection:
-        class: Happyr\Auth0Bundle\Security\CsrfProtection
+    Happyr\Auth0Bundle\Security\CsrfProtection:
         arguments:
             - ~ # csrf protection flag
             - ~ # csrf token manager
+
+    happyr.auth0.api.authentication: '@Auth0\SDK\API\Authentication'
+    happyr.auth0.api.management.factory: '@Happyr\Auth0Bundle\Factory\ManagementFactory'
+    happyr.auth0.api.management: '@Auth0\SDK\API\Management'
+    happyr.auth0.twig.extension: '@Happyr\Auth0Bundle\Twig\Auth0Extension'
+    happyr.auth0.sso_url_generator: '@Happyr\Auth0Bundle\SSOUrlGenerator'
+    happyr.auth0.security.csrf_protection: '@Happyr\Auth0Bundle\Security\CsrfProtection'

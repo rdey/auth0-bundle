@@ -34,7 +34,7 @@ class BundleInitializationTest extends BaseBundleTestCase
         ];
 
         foreach ($map as $serviceId => $class) {
-            $this->assertTrue($container->has($serviceId));
+            $this->assertTrue($container->has($serviceId), $serviceId);
             $service = $container->get($serviceId);
             $this->assertInstanceOf($class, $service);
         }

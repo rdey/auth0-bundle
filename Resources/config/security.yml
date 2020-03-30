@@ -1,35 +1,36 @@
 services:
-    happyr.auth0.security.authentication.provider.sso:
-        class: Happyr\Auth0Bundle\Security\Authentication\Provider\SSOProvider
-        arguments: [~, '@happyr.auth0.api.authentication']
+    Happyr\Auth0Bundle\Security\Authentication\Provider\SSOProvider:
+        arguments: [~, '@Auth0\SDK\API\Authentication']
         public: false
 
-    happyr.auth0.security.authentication.listener.sso:
-        class: Happyr\Auth0Bundle\Security\Firewall\SSOListener
+    Happyr\Auth0Bundle\Security\Firewall\SSOListener:
         parent: security.authentication.listener.abstract
         abstract: true
         calls:
-          - [ 'setAuthenticationApi', ["@happyr.auth0.api.authentication"]]
+          - [ 'setAuthenticationApi', ['@Auth0\SDK\API\Authentication']]
           - [ 'setClientSecret', ['%auth0.client_secret%']]
-          - [ 'setCsrfProtection', ['@happyr.auth0.security.csrf_protection']]
+          - [ 'setCsrfProtection', ['@Happyr\Auth0Bundle\Security\CsrfProtection']]
 
-    happyr.auth0.security.authentication.entry_point.oauth:
-        class: Happyr\Auth0Bundle\Security\EntryPoint\SSOEntryPoint
+    Happyr\Auth0Bundle\Security\EntryPoint\SSOEntryPoint:
         arguments:
-            - "@security.http_utils"
-            - "@happyr_auth0.sso_url_generator"
+            - '@security.http_utils'
+            - '@Happyr\Auth0Bundle\SSOUrlGenerator'
             - ~
             - ~
             - ~
         abstract: true
 
-    happyr.auth0.security.authentication.provider.null:
-        class: Happyr\Auth0Bundle\Security\Authentication\Provider\NullProvider
+    Happyr\Auth0Bundle\Security\Authentication\Provider\NullProvider:
         public: false
 
-    happyr.auth0.security.authentication.listener.logout:
-        class: Happyr\Auth0Bundle\Security\Firewall\Auth0LogoutListener
+    Happyr\Auth0Bundle\Security\Firewall\Auth0LogoutListener:
         parent: security.logout_listener
         abstract: true
         calls:
-            - [ 'setAuth0Domain', ["%auth0.domain%"]]
+            - [ 'setAuth0Domain', ['%auth0.domain%']]
+
+    happyr.auth0.security.authentication.provider.sso: '@Happyr\Auth0Bundle\Security\Authentication\Provider\SSOProvider'
+    happyr.auth0.security.authentication.listener.sso: '@Happyr\Auth0Bundle\Security\Firewall\SSOListener'
+    happyr.auth0.security.authentication.entry_point.oauth: '@Happyr\Auth0Bundle\Security\EntryPoint\SSOEntryPoint'
+    happyr.auth0.security.authentication.provider.null: '@Happyr\Auth0Bundle\Security\Authentication\Provider\NullProvider'
+    happyr.auth0.security.authentication.listener.logout: '@Happyr\Auth0Bundle\Security\Firewall\Auth0LogoutListener'

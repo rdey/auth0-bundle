@@ -137,36 +137,52 @@ class SSOToken extends AbstractToken implements HasClaimsInterface
     /**
      * {@inheritdoc}
      */
-    public function serialize()
+    public function __serialize(): array
     {
         $user = $this->getUser();
 
-        return serialize(
-            [
-                is_object($user) ? clone $user : $user,
-                is_object($this->claims) ? clone $this->claims : $this->claims,
-                $this->isAuthenticated(),
-                $this->getRoles(),
-                $this->getAttributes(),
-                $this->accessToken,
-                $this->expiresAt,
-                $this->refreshToken,
-                $this->createdFromRefreshToken,
-            ]
-        );
+        return [
+            is_object($user) ? clone $user : $user,
+            is_object($this->claims) ? clone $this->claims : $this->claims,
+            $this->isAuthenticated(),
+            $this->getRoleNames(),
+            $this->getAttributes(),
+            $this->accessToken,
+            $this->expiresAt,
+            $this->refreshToken,
+            $this->createdFromRefreshToken,
+        ];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function unserialize($serialized)
+    public function __unserialize(array $data): void
     {
-        $data = unserialize($serialized);
         if (count($data) === 8) {
-            list($user, $this->claims, $isAuthenticated, $this->storedRoles, $attributes, $this->accessToken, $this->expiresAt, $this->refreshToken) = $data;
+            [
+                $user,
+                $this->claims,
+                $isAuthenticated,
+                $this->storedRoles,
+                $attributes,
+                $this->accessToken,
+                $this->expiresAt,
+                $this->refreshToken
+            ] = $data;
             $this->createdFromRefreshToken = false;
         } else {
-            list($user, $this->claims, $isAuthenticated, $this->storedRoles, $attributes, $this->accessToken, $this->expiresAt, $this->refreshToken, $this->createdFromRefreshToken) = $data;
+            [
+                $user,
+                $this->claims,
+                $isAuthenticated,
+                $this->storedRoles,
+                $attributes,
+                $this->accessToken,
+                $this->expiresAt,
+                $this->refreshToken,
+                $this->createdFromRefreshToken
+            ] = $data;
         }
 
         if ($user) {
@@ -188,22 +204,5 @@ class SSOToken extends AbstractToken implements HasClaimsInterface
         }
 
         return array_keys($uniqueRoles);
-    }
-
-
-    /**
-     * This function is deprecated by Symfony 4.3.
-     */
-    public function getRoles()
-    {
-        $allRoles = array_merge(parent::getRoles(), $this->storedRoles);
-        $uniqueRoles = [];
-
-        /** @var Role $role */
-        foreach ($allRoles as $role) {
-            $uniqueRoles[$role->getRole()] = $role;
-        }
-
-        return array_values($uniqueRoles);
     }
 }

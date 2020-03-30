@@ -2,6 +2,9 @@
 
 namespace Happyr\Auth0Bundle\DependencyInjection;
 
+use Auth0\SDK\API\Authentication;
+use Happyr\Auth0Bundle\Factory\ManagementFactory;
+use Happyr\Auth0Bundle\Security\CsrfProtection;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Reference;
@@ -41,13 +44,13 @@ class HappyrAuth0Extension extends Extension
         }
 
         if (!empty($config['httplug_client_service'])) {
-            $container->getDefinition('happyr.auth0.api.authentication')
+            $container->getDefinition(Authentication::class)
                 ->replaceArgument(5, new Reference($config['httplug_client_service']));
-            $container->getDefinition('happyr.auth0.api.management.factory')
+            $container->getDefinition(ManagementFactory::class)
                 ->replaceArgument(3, new Reference($config['httplug_client_service']));
         }
 
-        $container->getDefinition('happyr.auth0.security.csrf_protection')
+        $container->getDefinition(CsrfProtection::class)
             ->replaceArgument(0, $config['csrf_protection'])
             ->replaceArgument(1, new Reference('security.csrf.token_manager'));
     }
