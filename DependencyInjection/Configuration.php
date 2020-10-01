@@ -15,10 +15,16 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $root = $treeBuilder->root('happyr_auth0');
+        $treeBuilder = new TreeBuilder('happyr_auth0');
 
-        $root
+        if (method_exists($treeBuilder, 'getRootNode')) {
+            $rootNode = $treeBuilder->getRootNode();
+        } else {
+            // BC layer for symfony/config 4.1 and older
+            $rootNode = $treeBuilder->root('happyr_auth0');
+        }
+
+        $rootNode
             ->children()
                 ->scalarNode('domain')->isRequired()->cannotBeEmpty()->end()
                 ->scalarNode('client_id')->isRequired()->cannotBeEmpty()->end()
